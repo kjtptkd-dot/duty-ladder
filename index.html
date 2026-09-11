@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당직 사다리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        button.secondary {
+            background: #6c757d;
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .ladder-section {
+            margin-top: 30px;
+        }
+
+        .ladder-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .ladder {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .rung {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .rung-number {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 30px;
+            font-size: 1.2em;
+        }
+
+        .rung-name {
+            flex: 1;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .rung-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .export-section button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🪜 당직 사다리</h1>
+        <p class="subtitle">공정한 당직 순서를 결정하세요</p>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="nameInput" placeholder="이름을 입력하세요">
+                <button onclick="addPerson()">추가</button>
+            </div>
+            <div class="input-group">
+                <button class="secondary" onclick="shuffleLadder()" style="flex: 1;">🔀 섞기</button>
+                <button class="secondary" onclick="clearLadder()" style="flex: 1;">🗑️ 초기화</button>
+            </div>
+        </div>
+
+        <div class="ladder-section">
+            <div class="ladder-title">당직 순서</div>
+            <div id="ladder" class="ladder">
+                <div class="empty-message">사람을 추가해보세요!</div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">총 인원</div>
+                    <div class="stat-value" id="totalCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">순서 결정됨</div>
+                    <div class="stat-value" id="readyCount">0</div>
+                </div>
+            </div>
+
+            <div class="export-section">
+                <button onclick="copyToClipboard()">📋 복사</button>
+                <button onclick="printLadder()">🖨️ 인쇄</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ladder = [];
+
+        function addPerson() {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                alert('이름을 입력해주세요!');
+                return;
+            }
+
+            if (ladder.some(person => person.name === name)) {
+                alert('이미 추가된 이름입니다!');
+                return;
+            }
+
+            ladder.push({ name: name, order: ladder.length + 1 });
+            nameInput.value = '';
+            renderLadder();
+            nameInput.focus();
+        }
+
+        function removePerson(index) {
+            ladder.splice(index, 1);
+            renderLadder();
+        }
+
+        function shuffleLadder() {
+            if (ladder.length === 0) {
+                alert('먼저 사람을 추가해주세요!');
+                return;
+            }
+
+            // Fisher-Yates 셔플 알고리즘
+            for (let i = ladder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [ladder[i], ladder[j]] = [ladder[j], ladder[i]];
+            }
+
+            renderLadder();
+        }
+
+        function clearLadder() {
+            if (ladder.length === 0) return;
+            if (confirm('모든 데이터를 삭제하시겠습니까?')) {
+                ladder = [];
+                renderLadder();
+            }
+        }
+
+        function renderLadder() {
+            const ladderDiv = document.getElementById('ladder');
+
+            if (ladder.length === 0) {
+                ladderDiv.innerHTML = '<div class="empty-message">사람을 추가해보세요!</div>';
+                updateStats();
+                return;
+            }
+
+            ladderDiv.innerHTML = ladder.map((person, index) => `
+                <div class="rung">
+                    <div class="rung-number">${index + 1}</div>
+                    <div class="rung-name">${person.name}</div>
+                    <div class="rung-actions">
+                        <button class="secondary remove-btn" onclick="removePerson(${index})">제거</button>
+                    </div>
+                </div>
+            `).join('');
+
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').textContent = ladder.length;
+            document.getElementById('readyCount').textContent = ladder.length > 0 ? ladder.length : 0;
+        }
+
+        function copyToClipboard() {
+            if (ladder.length === 0) {
+                alert('복사할 사다리가 없습니다!');
+                return;
+            }
+
+            const text = ladder.map((person, index) => `${index + 1}. ${person.name}`).join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                alert('클립보드에 복사되었습니다!');
+            });
+        }
+
+        function printLadder() {
+            if (ladder.length === 0) {
+                alert('인쇄할 사다리가 없습니다!');
+                return;
+            }
+
+            const printWindow = window.open('', '', 'height=600,width=800');
+            const content = `
+                <html>
+                <head>
+                    <title>당직 사다리</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                        th { background: #667eea; color: white; }
+                        tr:nth-child(even) { background: #f8f9fa; }
+                    </style>
+                </head>
+                <body>
+                    <h1>🪜 당직 사다리</h1>
+                    <table>
+                        <tr><th>순서</th><th>이름</th></tr>
+                        ${ladder.map((person, index) => `<tr><td>${index + 1}</td><td>${person.name}</td></tr>`).join('')}
+                    </table>
+                    <p style="margin-top: 30px; text-align: center; color: #666;">
+                        인쇄 날짜: ${new Date().toLocaleDateString('ko-KR')}
+                    </p>
+                </body>
+                </html>
+            `;
+            printWindow.document.write(content);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // Enter 키로 추가
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addPerson();
+            }
+        });
+    </script>
+</body>
+</html>
